@@ -16,6 +16,6 @@ public interface UserService {
 
 
     public UserInfor detail(UUID userId);
-    public void forgotPassword(String email);
+//    public void forgotPassword(String email);
 
     }

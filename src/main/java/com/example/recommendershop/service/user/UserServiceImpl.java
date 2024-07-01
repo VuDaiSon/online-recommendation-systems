@@ -10,7 +10,6 @@
     import com.example.recommendershop.exception.MasterException;
     import com.example.recommendershop.mapper.UserMapper;
     import com.example.recommendershop.repository.UserRepository;
-    import com.example.recommendershop.service.emailMessage.EmailService;
     import jakarta.servlet.http.HttpSession;
     import org.springframework.beans.factory.annotation.Autowired;
     import org.springframework.http.HttpStatus;
@@ -26,14 +25,12 @@
         private final UserRepository userRepository;
         private final HttpSession httpSession;
         private final UserMapper userMapper;
-        private final EmailService emailService;
 
 
-        public UserServiceImpl(UserRepository userRepository, HttpSession httpSession, UserMapper userMapper, EmailService emailService) {
+        public UserServiceImpl(UserRepository userRepository, HttpSession httpSession, UserMapper userMapper) {
             this.userRepository = userRepository;
             this.httpSession = httpSession;
             this.userMapper = userMapper;
-            this.emailService = emailService;
         }
 
         @Override
@@ -73,49 +70,6 @@
         public void logout() {
             httpSession.invalidate();
         }
-//        private String generateRandomPassword() {
-//            String upperCaseLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-//            String lowerCaseLetters = "abcdefghijklmnopqrstuvwxyz";
-//            String numbers = "0123456789";
-//            String specialChars = "!@#$%&_/?";
-//            String allChars = upperCaseLetters + lowerCaseLetters + numbers + specialChars;
-//            Random random = new Random();
-//            StringBuilder password = new StringBuilder();
-//            for (int i = 0; i < 10; i++) {
-//                password.append(allChars.charAt(random.nextInt(allChars.length())));
-//            }
-//            return password.toString();
-//        }
-//        public void sendEmail(EmailMessage emailMessage){
-//            SimpleMailMessage mailMessage = new SimpleMailMessage();
-//            mailMessage.setTo(emailMessage.getTo());
-//            mailMessage.setSubject(emailMessage.getSubject());
-//            mailMessage.setText(emailMessage.getBody());
-//            javaMailSender.send(mailMessage);
-//        }
-//        @Override
-//        public void forgotPasword(String email) {
-//            Optional<User> userOptional = userRepository.findByEmail(email);
-//                if(userOptional.isPresent()){
-//                    User user = userOptional.get();
-//                    String newPassword = generateRandomPassword();
-//
-//                    //save
-//                    user.setPassword(passwordEncoder.encode(newPassword));
-//                    userRepository.save(user);
-//
-//                    // send email
-//                    EmailMessage emailMessage = new EmailMessage();
-//                    emailMessage.setTo(email);
-//                    emailMessage.setSubject("Reset password");
-//                    emailMessage.setBody("Your new password: " + newPassword);
-//                    sendEmail(emailMessage);
-//                } else {
-//                    throw new MasterException(HttpStatus.NOT_FOUND, "Email không tồn tại");
-//                }
-//
-//                }
-
         public UserInfor detail(UUID userId){
             // Lấy UserId từ session
             String sessionUserId = (String) httpSession.getAttribute("UserId");
@@ -143,39 +97,39 @@
             httpSession.setAttribute("Role", existingUser.getRole().name());
             return userMapper.toDao(updatedUser);
         }
-        private String generateRandomPassword() {
-            String upperCaseLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            String lowerCaseLetters = "abcdefghijklmnopqrstuvwxyz";
-            String numbers = "0123456789";
-            String specialChars = "!@#$%&_/?";
-            String allChars = upperCaseLetters + lowerCaseLetters + numbers + specialChars;
-            Random random = new Random();
-            StringBuilder password = new StringBuilder();
-            for (int i = 0; i < 10; i++) {
-                password.append(allChars.charAt(random.nextInt(allChars.length())));
-            }
-            return password.toString();
-        }
-        @Override
-        public void forgotPassword(String email) {
-            Optional<User> userOptional = userRepository.findByEmail(email);
-            if (userOptional.isPresent()) {
-                User user = userOptional.get();
-
-                String newPassword = generateRandomPassword();
-
-                user.setPassword((newPassword));
-                userRepository.save(user);
-
-                EmailMessage emailMessage = new EmailMessage();
-                emailMessage.setTo(email);
-                emailMessage.setSubject("Reset password");
-                emailMessage.setBody("Your new password: " + newPassword);
-                emailService.sendEmail(emailMessage);
-            } else {
-                throw new MasterException(HttpStatus.NOT_FOUND, "không tìm thấy tài khoản");
-            }
-        }
+//        private String generateRandomPassword() {
+//            String upperCaseLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+//            String lowerCaseLetters = "abcdefghijklmnopqrstuvwxyz";
+//            String numbers = "0123456789";
+//            String specialChars = "!@#$%&_/?";
+//            String allChars = upperCaseLetters + lowerCaseLetters + numbers + specialChars;
+//            Random random = new Random();
+//            StringBuilder password = new StringBuilder();
+//            for (int i = 0; i < 10; i++) {
+//                password.append(allChars.charAt(random.nextInt(allChars.length())));
+//            }
+//            return password.toString();
+//        }
+//        @Override
+//        public void forgotPassword(String email) {
+//            Optional<User> userOptional = userRepository.findByEmail(email);
+//            if (userOptional.isPresent()) {
+//                User user = userOptional.get();
+//
+//                String newPassword = generateRandomPassword();
+//
+//                user.setPassword((newPassword));
+//                userRepository.save(user);
+//
+//                EmailMessage emailMessage = new EmailMessage();
+//                emailMessage.setTo(email);
+//                emailMessage.setSubject("Reset password");
+//                emailMessage.setBody("Your new password: " + newPassword);
+//                emailService.sendEmail(emailMessage);
+//            } else {
+//                throw new MasterException(HttpStatus.NOT_FOUND, "không tìm thấy tài khoản");
+//            }
+//        }
 
 
     }
