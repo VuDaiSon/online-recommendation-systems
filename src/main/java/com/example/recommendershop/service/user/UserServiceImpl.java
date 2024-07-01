@@ -1,6 +1,5 @@
     package com.example.recommendershop.service.user;
 
-    import com.example.recommendershop.dto.EmailMessage;
     import com.example.recommendershop.dto.ResponseData;
     import com.example.recommendershop.dto.user.request.LoginRequest;
     import com.example.recommendershop.dto.user.request.UserRequest;

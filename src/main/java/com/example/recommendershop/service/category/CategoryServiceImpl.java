@@ -32,7 +32,6 @@ public class CategoryServiceImpl implements CategoryService{
     }
     @Override
     public CategoryResponse create(CategoryRequest categoryRequest) {
-        UUID userId = (UUID) httpSession.getAttribute("userId");
         String roleStr = (String) httpSession.getAttribute("Role");
         Role role = Role.valueOf(roleStr);
         if(!(role.equals(Role.ADMIN) || role.equals(Role.SUB_ADMIN))){
@@ -49,7 +48,6 @@ public class CategoryServiceImpl implements CategoryService{
 
     @Override
     public CategoryResponse update(UUID categoryId, CategoryRequest categoryRequest) {
-        UUID userId = (UUID) httpSession.getAttribute("userId");
         String roleStr = (String) httpSession.getAttribute("Role");
         Role role = Role.valueOf(roleStr);
         if(!(role.equals(Role.ADMIN) || role.equals(Role.SUB_ADMIN))){
@@ -74,7 +72,6 @@ public class CategoryServiceImpl implements CategoryService{
 
     @Override
     public void delete(UUID categoryId) {
-        UUID userId = (UUID) httpSession.getAttribute("userId");
         String roleStr = (String) httpSession.getAttribute("Role");
         Role role = Role.valueOf(roleStr);
         if(!(role.equals(Role.ADMIN) || role.equals(Role.SUB_ADMIN))){

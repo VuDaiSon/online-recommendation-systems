@@ -23,6 +23,5 @@ public class ProductResponse {
     private Double price;
     private Integer age;
     private Sex sex;
-    private Integer serial;
     private CategoryResponse category;
 }
