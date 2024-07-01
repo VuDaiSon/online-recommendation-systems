@@ -14,7 +14,8 @@ public interface UserService {
 
     public void logout();
 
-//    public void forgotPasword(String email);
 
     public UserInfor detail(UUID userId);
-}
+    public void forgotPassword(String email);
+
+    }
