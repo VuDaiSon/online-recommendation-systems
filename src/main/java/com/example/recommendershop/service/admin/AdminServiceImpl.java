@@ -42,9 +42,9 @@ public class AdminServiceImpl implements AdminService{
         return rPage;
     }
     public BasePage<UserViewForAdmin> getAllUser(ApiListBaseRequest listBaseRequest){
-        String roleStr = (String) httpSession.getAttribute("Role");
-        Role role = Role.valueOf(roleStr);
-        if(!role.equals(Role.ADMIN)){
+        UUID userId = (UUID) httpSession.getAttribute("UserId");
+        User user = userRepository.getByUserId(userId);
+        if(!(user.getRole().equals(Role.ADMIN))){
             throw new MasterException(HttpStatus.FORBIDDEN, "bạn không có quyền!");
         }
         Page<User> page = userRepository.findAll(FilterDataUtil.buildPageRequest(listBaseRequest));
@@ -53,9 +53,9 @@ public class AdminServiceImpl implements AdminService{
 
     @Override
     public UserViewForAdmin update(UUID userId, UserEditForAdmin edit) {
-        String roleStr = (String) httpSession.getAttribute("Role");
-        Role role = Role.valueOf(roleStr);
-        if(!role.equals(Role.ADMIN)){
+        UUID adminId = (UUID) httpSession.getAttribute("UserId");
+        User admin = userRepository.getByUserId(adminId);
+        if(!(admin.getRole().equals(Role.ADMIN))){
             throw new MasterException(HttpStatus.FORBIDDEN, "bạn không có quyền!");
         }
         User existingUser = userRepository.findById(userId).orElseThrow(()-> new MasterException(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng!"));
@@ -66,9 +66,9 @@ public class AdminServiceImpl implements AdminService{
 
     @Override
     public void deleteUser(UUID userId) {
-        String roleStr = (String) httpSession.getAttribute("Role");
-        Role role = Role.valueOf(roleStr);
-        if(!role.equals(Role.ADMIN)){
+        UUID adminId = (UUID) httpSession.getAttribute("UserId");
+        User admin = userRepository.getByUserId(adminId);
+        if(!(admin.getRole().equals(Role.ADMIN))){
             throw new MasterException(HttpStatus.FORBIDDEN, "bạn không có quyền!");
         }
         User existingUser = userRepository.findById(userId).orElseThrow(() -> new MasterException(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng!"));

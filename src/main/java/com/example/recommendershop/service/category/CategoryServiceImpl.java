@@ -6,10 +6,12 @@ import com.example.recommendershop.dto.category.request.CategoryRequest;
 import com.example.recommendershop.dto.category.response.CategoryAvatar;
 import com.example.recommendershop.dto.category.response.CategoryResponse;
 import com.example.recommendershop.entity.Category;
+import com.example.recommendershop.entity.User;
 import com.example.recommendershop.enums.Role;
 import com.example.recommendershop.exception.MasterException;
 import com.example.recommendershop.mapper.CategoryMapper;
 import com.example.recommendershop.repository.CategoryRepository;
+import com.example.recommendershop.repository.UserRepository;
 import com.example.recommendershop.utils.FilterDataUtil;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -24,17 +27,21 @@ public class CategoryServiceImpl implements CategoryService{
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
     private final HttpSession httpSession;
+    private final UserRepository userRepository;
+
     @Autowired
-    public CategoryServiceImpl(CategoryRepository categoryRepository, CategoryMapper categoryMapper,  HttpSession httpSession){
+    public CategoryServiceImpl(CategoryRepository categoryRepository, CategoryMapper categoryMapper,  HttpSession httpSession,
+                               UserRepository userRepository){
         this.categoryRepository = categoryRepository;
         this.categoryMapper = categoryMapper;
         this.httpSession = httpSession;
+        this.userRepository = userRepository;
     }
     @Override
     public CategoryResponse create(CategoryRequest categoryRequest) {
-        String roleStr = (String) httpSession.getAttribute("Role");
-        Role role = Role.valueOf(roleStr);
-        if(!(role.equals(Role.ADMIN) || role.equals(Role.SUB_ADMIN))){
+        UUID userId = (UUID) httpSession.getAttribute("UserId");
+        User user = userRepository.getByUserId(userId);
+        if(!(user.getRole().equals(Role.ADMIN) || user.getRole().equals(Role.SUB_ADMIN))){
             throw new MasterException(HttpStatus.FORBIDDEN, "bạn không có quyền!");
         }
         if(categoryRepository.findCategoryByName(categoryRequest.getName()) !=null){
@@ -48,9 +55,9 @@ public class CategoryServiceImpl implements CategoryService{
 
     @Override
     public CategoryResponse update(UUID categoryId, CategoryRequest categoryRequest) {
-        String roleStr = (String) httpSession.getAttribute("Role");
-        Role role = Role.valueOf(roleStr);
-        if(!(role.equals(Role.ADMIN) || role.equals(Role.SUB_ADMIN))){
+        UUID userId = (UUID) httpSession.getAttribute("UserId");
+        User user = userRepository.getByUserId(userId);
+        if(!(user.getRole().equals(Role.ADMIN) || user.getRole().equals(Role.SUB_ADMIN))){
             throw new MasterException(HttpStatus.FORBIDDEN, "bạn không có quyền!");
         }
         if(!categoryRepository.existsById(categoryId)){
@@ -72,9 +79,9 @@ public class CategoryServiceImpl implements CategoryService{
 
     @Override
     public void delete(UUID categoryId) {
-        String roleStr = (String) httpSession.getAttribute("Role");
-        Role role = Role.valueOf(roleStr);
-        if(!(role.equals(Role.ADMIN) || role.equals(Role.SUB_ADMIN))){
+        UUID userId = (UUID) httpSession.getAttribute("UserId");
+        User user = userRepository.getByUserId(userId);
+        if(!(user.getRole().equals(Role.ADMIN) || user.getRole().equals(Role.SUB_ADMIN))){
             throw new MasterException(HttpStatus.FORBIDDEN, "bạn không có quyền!");
         }
         if(!categoryRepository.existsById(categoryId)){

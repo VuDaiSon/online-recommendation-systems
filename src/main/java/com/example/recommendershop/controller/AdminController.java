@@ -17,7 +17,7 @@ import java.util.UUID;
 public class AdminController {
 @Autowired
     private AdminService adminService;
-@GetMapping("/all")
+@GetMapping("/")
     public BasePage<UserViewForAdmin> findAll(@ParameterObject ApiListBaseRequest listBaseRequest){
         return adminService.getAllUser(listBaseRequest);
 }

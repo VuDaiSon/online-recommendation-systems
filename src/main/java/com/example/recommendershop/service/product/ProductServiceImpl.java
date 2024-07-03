@@ -8,12 +8,14 @@ import com.example.recommendershop.dto.product.response.ProductAvatar;
 import com.example.recommendershop.dto.product.response.ProductResponse;
 import com.example.recommendershop.entity.Category;
 import com.example.recommendershop.entity.Product;
+import com.example.recommendershop.entity.User;
 import com.example.recommendershop.enums.Role;
 import com.example.recommendershop.exception.MasterException;
 import com.example.recommendershop.mapper.CategoryMapper;
 import com.example.recommendershop.mapper.ProductMapper;
 import com.example.recommendershop.repository.CategoryRepository;
 import com.example.recommendershop.repository.ProductRepository;
+import com.example.recommendershop.repository.UserRepository;
 import com.example.recommendershop.utils.FilterDataUtil;
 import io.micrometer.common.util.StringUtils;
 import jakarta.persistence.criteria.Predicate;
@@ -35,16 +37,16 @@ public class ProductServiceImpl implements ProductService{
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
     private final CategoryRepository categoryRepository;
-    private final CategoryMapper categoryMapper;
+    private final UserRepository userRepository;
     private final HttpSession httpSession;
     List<Specification<Product>> specifications;
 
     @Autowired
-    public ProductServiceImpl(ProductRepository productRepository, ProductMapper productMapper, CategoryRepository categoryRepository, CategoryMapper categoryMapper, HttpSession httpSession){
+    public ProductServiceImpl(ProductRepository productRepository, ProductMapper productMapper, CategoryRepository categoryRepository, HttpSession httpSession, UserRepository userRepository){
         this.productRepository =productRepository;
         this.productMapper = productMapper;
         this.categoryRepository = categoryRepository;
-        this.categoryMapper = categoryMapper;
+        this.userRepository = userRepository;
         this.httpSession = httpSession;
         specifications = new ArrayList<>();
 
@@ -73,9 +75,9 @@ public class ProductServiceImpl implements ProductService{
 //        return productResponse;
 //    }
     public ProductResponse create(ProductRequest productRequest) {
-        String roleStr = (String) httpSession.getAttribute("Role");
-        Role role = Role.valueOf(roleStr);
-        if(!(role.equals(Role.ADMIN) || role.equals(Role.SUB_ADMIN))){
+        UUID userId = (UUID) httpSession.getAttribute("UserId");
+        User user = userRepository.getByUserId(userId);
+        if(!(user.getRole().equals(Role.ADMIN) || user.getRole().equals(Role.SUB_ADMIN))){
             throw new MasterException(HttpStatus.FORBIDDEN, "bạn không có quyền!");
         }
         if (productRepository.findProductByName(productRequest.getName()) != null) {
@@ -100,9 +102,9 @@ public class ProductServiceImpl implements ProductService{
     @Override
     @Transactional
     public ProductResponse update(UUID productId, ProductRequest productRequest) {
-        String roleStr = (String) httpSession.getAttribute("Role");
-        Role role = Role.valueOf(roleStr);
-        if(!(role.equals(Role.ADMIN) || role.equals(Role.SUB_ADMIN))){
+        UUID userId = (UUID) httpSession.getAttribute("UserId");
+        User user = userRepository.getByUserId(userId);
+        if(!(user.getRole().equals(Role.ADMIN) || user.getRole().equals(Role.SUB_ADMIN))){
             throw new MasterException(HttpStatus.FORBIDDEN, "bạn không có quyền!");
         }
         Product existingProduct = productRepository.findById(productId)
@@ -123,9 +125,9 @@ public class ProductServiceImpl implements ProductService{
     }
     @Override
     public void delete(UUID productId){
-        String roleStr = (String) httpSession.getAttribute("Role");
-        Role role = Role.valueOf(roleStr);
-        if(!(role.equals(Role.ADMIN) || role.equals(Role.SUB_ADMIN))){
+        UUID userId = (UUID) httpSession.getAttribute("UserId");
+        User user = userRepository.getByUserId(userId);
+        if(!(user.getRole().equals(Role.ADMIN) || user.getRole().equals(Role.SUB_ADMIN))){
             throw new MasterException(HttpStatus.FORBIDDEN, "bạn không có quyền!");
         }
         if(!productRepository.existsById(productId)){
