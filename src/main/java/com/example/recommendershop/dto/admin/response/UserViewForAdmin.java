@@ -19,15 +19,10 @@ import java.util.UUID;
 @NoArgsConstructor
 public class UserViewForAdmin extends BaseDto {
     private UUID userId;
-
     private String name;
-
     private String email;
-
     private String phone;
-
     private String address;
-
     private String password;
     private Integer age;
     private Sex sex;

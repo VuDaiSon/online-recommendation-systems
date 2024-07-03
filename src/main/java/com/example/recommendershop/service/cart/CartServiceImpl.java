@@ -2,10 +2,12 @@ package com.example.recommendershop.service.cart;
 
 import com.example.recommendershop.dto.ResponseData;
 import com.example.recommendershop.dto.cart.request.AddToCartRequest;
+import com.example.recommendershop.dto.cart.response.CartView;
 import com.example.recommendershop.entity.Cart;
 import com.example.recommendershop.entity.CartDetail;
 import com.example.recommendershop.entity.Product;
 import com.example.recommendershop.exception.MasterException;
+import com.example.recommendershop.mapper.CartMapper;
 import com.example.recommendershop.repository.CartDetailRepository;
 import com.example.recommendershop.repository.CartRepository;
 import com.example.recommendershop.repository.ProductRepository;
@@ -25,14 +27,16 @@ public class CartServiceImpl implements CartService{
     private final HttpSession httpSession;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final CartMapper cartMapper;
 
 
-    public CartServiceImpl(CartRepository cartRepository, CartDetailRepository cartDetailRepository, HttpSession httpSession, ProductRepository productRepository, UserRepository userRepository){
+    public CartServiceImpl(CartRepository cartRepository, CartDetailRepository cartDetailRepository, HttpSession httpSession, ProductRepository productRepository, UserRepository userRepository, CartMapper cartMapper){
         this.cartRepository = cartRepository;
         this.cartDetailRepository = cartDetailRepository;
         this.httpSession = httpSession;
         this.productRepository = productRepository;
         this.userRepository = userRepository;
+        this.cartMapper = cartMapper;
     }
 
     @Override
@@ -107,4 +111,11 @@ public class CartServiceImpl implements CartService{
         return new ResponseData<>(HttpStatus.OK.value(),"xóa thành công");
     }
 
+    @Override
+    public CartView CartCheck() {
+        UUID userId = (UUID) httpSession.getAttribute("UserId");
+        Optional<Cart> cartOptional = cartRepository.findCartByUser_UserIdAndStatus(userId, "Active");
+        Cart cart = cartOptional.get();
+        return cartMapper.toResponse(cart);
+    }
 }

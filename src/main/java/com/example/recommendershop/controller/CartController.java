@@ -3,6 +3,7 @@ package com.example.recommendershop.controller;
 
 import com.example.recommendershop.dto.ResponseData;
 import com.example.recommendershop.dto.cart.request.AddToCartRequest;
+import com.example.recommendershop.dto.cart.response.CartView;
 import com.example.recommendershop.service.cart.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -28,5 +29,9 @@ public class CartController {
     @DeleteMapping("/{cartDetailId}")
     public ResponseData<?> RemoveCartLine(@PathVariable(name = "cartDetailId")UUID cartDetailId){
         return cartService.deleteCartLine(cartDetailId);
+    }
+    @GetMapping("/{userId}")
+    public CartView cartCheck(){
+        return cartService.CartCheck();
     }
 }

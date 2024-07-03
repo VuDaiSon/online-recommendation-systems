@@ -140,8 +140,6 @@ public class ProductServiceImpl implements ProductService{
             throw new MasterException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm");
         }
         return productMapper.toDao(productRepository.getReferenceById(productId));
-
-
     }
     protected BasePage<ProductAvatar> map(Page<Product> page) {
         BasePage<ProductAvatar> rPage = new BasePage<>();
@@ -159,7 +157,6 @@ public class ProductServiceImpl implements ProductService{
     @Override
     public BasePage<ProductAvatar> search(SearchEntity search, ApiListBaseRequest filter) {
         String keyword = search.getKeyword();
-
         Specification<Product> spec = (root, query, builder) -> {
             List<Predicate> predicates = new ArrayList<>();
             if (StringUtils.isNotBlank(keyword)) {
@@ -171,13 +168,9 @@ public class ProductServiceImpl implements ProductService{
         Page<Product> page = productRepository.findAll(spec, FilterDataUtil.buildPageRequest(filter));
         return this.map(page);
     }
-
     public BasePage<ProductAvatar> getProductsByCategory(UUID categoryId, ApiListBaseRequest listBaseRequest){
         Category category = categoryRepository.findById(categoryId).orElseThrow(()-> new MasterException(HttpStatus.NOT_FOUND, "không tìm thấy sản phẩm của category này"));
         Page<Product> productPage = productRepository.findProductByCategory(category, FilterDataUtil.buildPageRequest(listBaseRequest));
         return this.map(productPage);
     }
-
-
-
 }
