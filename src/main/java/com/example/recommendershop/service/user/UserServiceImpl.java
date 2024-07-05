@@ -1,5 +1,6 @@
     package com.example.recommendershop.service.user;
 
+    import com.example.recommendershop.config.BCryptPasswordEncoder;
     import com.example.recommendershop.dto.ResponseData;
     import com.example.recommendershop.dto.user.request.LoginRequest;
     import com.example.recommendershop.dto.user.request.UserRequest;
@@ -9,13 +10,14 @@
     import com.example.recommendershop.exception.MasterException;
     import com.example.recommendershop.mapper.UserMapper;
     import com.example.recommendershop.repository.UserRepository;
+    import com.example.recommendershop.config.PasswordEncoder;
     import jakarta.servlet.http.HttpSession;
     import org.springframework.beans.factory.annotation.Autowired;
+    import org.springframework.context.annotation.Bean;
     import org.springframework.http.HttpStatus;
     import org.springframework.stereotype.Service;
 
     import java.util.Optional;
-    import java.util.Random;
     import java.util.UUID;
 
     @Service
@@ -24,12 +26,14 @@
         private final UserRepository userRepository;
         private final HttpSession httpSession;
         private final UserMapper userMapper;
+        private final PasswordEncoder passwordEncoder;
 
 
-        public UserServiceImpl(UserRepository userRepository, HttpSession httpSession, UserMapper userMapper) {
+        public UserServiceImpl(UserRepository userRepository, HttpSession httpSession, UserMapper userMapper, PasswordEncoder passwordEncoder) {
             this.userRepository = userRepository;
             this.httpSession = httpSession;
             this.userMapper = userMapper;
+            this.passwordEncoder = passwordEncoder;
         }
 
         @Override
@@ -42,6 +46,8 @@
             }
             User user = userMapper.toEntity(userRequest);
             user.setRole(Role.USER);
+            String passwordEncode = passwordEncoder.encode(user.getPassword());
+            user.setPassword(passwordEncode);
             userRepository.save(user);
             return new ResponseData<>(HttpStatus.OK.value(), "Tao tai khoan thanh cong");
         }
@@ -53,10 +59,10 @@
             }
 
             Optional<User> userOptional = userRepository.findByEmail(loginRequest.getEmail());
-            if (userOptional.isEmpty() || !loginRequest.getPassword().equals(userOptional.get().getPassword())) {
+            User user = userOptional.get();
+            if (userOptional.isEmpty() || !passwordEncoder.matches(loginRequest.getPassword(),user.getPassword())) {
                 throw new MasterException(HttpStatus.UNAUTHORIZED, "Email hoặc mật khẩu sai");
             }
-            User user = userOptional.get();
             UUID token = user.getUserId();
             httpSession.setAttribute("UserId", user.getUserId());
             httpSession.setAttribute("UserName", user.getName());
