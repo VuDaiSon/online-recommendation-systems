@@ -1,6 +1,7 @@
 package com.example.recommendershop.controller;
 
 import com.example.recommendershop.dto.ResponseData;
+import com.example.recommendershop.dto.user.request.ChangePasswordRequest;
 import com.example.recommendershop.dto.user.request.LoginRequest;
 import com.example.recommendershop.dto.user.request.UserRequest;
 import com.example.recommendershop.dto.user.response.UserInfor;
@@ -41,4 +42,13 @@ public class UserController {
     public UserInfor getById(@PathVariable(name = "userId")UUID userId){
         return userService.detail(userId);
     }
+    @PutMapping("/{userId}")
+    public UserInfor edit(@PathVariable(name = "userId") UUID userId, @RequestBody UserRequest userRequest){
+        return userService.update(userId, userRequest);
+    }
+    @PutMapping("/{userId}/changePassword")
+    public ResponseData<?> change(@PathVariable(name = "userId")UUID userId, @RequestBody ChangePasswordRequest changePasswordRequest){
+        return userService.changePassword(userId, changePasswordRequest);
+    }
+
 }

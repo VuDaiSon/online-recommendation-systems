@@ -2,6 +2,7 @@
 
     import com.example.recommendershop.config.BCryptPasswordEncoder;
     import com.example.recommendershop.dto.ResponseData;
+    import com.example.recommendershop.dto.user.request.ChangePasswordRequest;
     import com.example.recommendershop.dto.user.request.LoginRequest;
     import com.example.recommendershop.dto.user.request.UserRequest;
     import com.example.recommendershop.dto.user.response.UserInfor;
@@ -13,7 +14,6 @@
     import com.example.recommendershop.config.PasswordEncoder;
     import jakarta.servlet.http.HttpSession;
     import org.springframework.beans.factory.annotation.Autowired;
-    import org.springframework.context.annotation.Bean;
     import org.springframework.http.HttpStatus;
     import org.springframework.stereotype.Service;
 
@@ -101,6 +101,30 @@
             httpSession.setAttribute("UserName", updatedUser.getName());
             httpSession.setAttribute("Role", existingUser.getRole().name());
             return userMapper.toDao(updatedUser);
+        }
+        private boolean verifyOldPassword(UUID userId, String oldPassword) {
+            Optional<User> userOptional = userRepository.findById(userId);
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+                return passwordEncoder.matches(oldPassword, user.getPassword());
+            }
+            return false;
+        }
+        public ResponseData<?> changePassword(UUID userId, ChangePasswordRequest changePasswordRequest){
+
+            if(!verifyOldPassword(userId, changePasswordRequest.getOldPassword())){
+                throw new MasterException(HttpStatus.BAD_REQUEST, "mật khẩu cũ không chính xác");
+            }
+            Optional<User> userOptional = userRepository.findById(userId);
+            if(userOptional.isPresent()){
+                User user = userOptional.get();
+                user.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
+                userRepository.save(user);
+            }
+            else {
+                throw new MasterException(HttpStatus.NOT_FOUND, "không tìm thấy người dùng");
+            }
+            return new ResponseData<>(HttpStatus.OK.value(), "đổi mật khẩu thành công");
         }
 //        private String generateRandomPassword() {
 //            String upperCaseLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";

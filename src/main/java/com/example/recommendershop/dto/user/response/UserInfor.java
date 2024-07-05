@@ -16,7 +16,6 @@ public class UserInfor {
     private String phone;
     private String address;
     private Date date;
-    private String password;
     private Integer age;
     private Sex sex;
 }
