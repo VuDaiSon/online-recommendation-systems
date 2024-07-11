@@ -13,7 +13,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.UUID;
 
 public interface ProductService {
-//    public ProductResponse create(ProductRequest productRequest);
     public ProductResponse create(ProductRequest productRequest);
     public ProductResponse update(UUID productId, ProductRequest productRequest);
     public ProductResponse detail(UUID productId);

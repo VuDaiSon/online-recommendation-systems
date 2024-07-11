@@ -1,67 +1,52 @@
 package com.example.recommendershop.service.category;
 
+import com.example.recommendershop.authorization.PermissionCheck;
 import com.example.recommendershop.dto.ApiListBaseRequest;
 import com.example.recommendershop.dto.BasePage;
 import com.example.recommendershop.dto.category.request.CategoryRequest;
 import com.example.recommendershop.dto.category.response.CategoryAvatar;
 import com.example.recommendershop.dto.category.response.CategoryResponse;
-import com.example.recommendershop.entity.Category;
-import com.example.recommendershop.entity.User;
-import com.example.recommendershop.enums.Role;
+import com.example.recommendershop.entity.*;
 import com.example.recommendershop.exception.MasterException;
 import com.example.recommendershop.mapper.CategoryMapper;
-import com.example.recommendershop.repository.CategoryRepository;
-import com.example.recommendershop.repository.UserRepository;
+import com.example.recommendershop.repository.*;
 import com.example.recommendershop.utils.FilterDataUtil;
-import jakarta.servlet.http.HttpSession;
+import com.example.recommendershop.validation.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
 public class CategoryServiceImpl implements CategoryService{
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
-    private final HttpSession httpSession;
-    private final UserRepository userRepository;
-
+    private final PermissionCheck permissionCheck;
+    private final Validator validator;
     @Autowired
-    public CategoryServiceImpl(CategoryRepository categoryRepository, CategoryMapper categoryMapper,  HttpSession httpSession,
-                               UserRepository userRepository){
+    public CategoryServiceImpl(CategoryRepository categoryRepository, CategoryMapper categoryMapper, PermissionCheck permissionCheck, Validator validator){
         this.categoryRepository = categoryRepository;
         this.categoryMapper = categoryMapper;
-        this.httpSession = httpSession;
-        this.userRepository = userRepository;
+        this.permissionCheck = permissionCheck;
+        this.validator = validator;
     }
     @Override
     public CategoryResponse create(CategoryRequest categoryRequest) {
-        UUID userId = (UUID) httpSession.getAttribute("UserId");
-        User user = userRepository.getByUserId(userId);
-        if(!(user.getRole().equals(Role.ADMIN) || user.getRole().equals(Role.SUB_ADMIN))){
-            throw new MasterException(HttpStatus.FORBIDDEN, "bạn không có quyền!");
-        }
-        if(categoryRepository.findCategoryByName(categoryRequest.getName()) !=null){
-            throw new MasterException(HttpStatus.BAD_REQUEST, "Sản phẩm đã tồn tại");
-        }
+        permissionCheck.checkPermission("add");
+        validator.checkEntityExists(categoryRepository.findCategoryByName(categoryRequest.getName()), HttpStatus.BAD_REQUEST, "Danh mục đã tồn tại");
         Category category = categoryRepository.save(categoryMapper.toEntity(categoryRequest));
         CategoryResponse categoryResponse = categoryMapper.toDao(category);
-        System.out.print("Tao san pham thanh cong");
+        System.out.print("Tạo sản phẩm thành công");
         return categoryResponse;
     }
 
     @Override
     public CategoryResponse update(UUID categoryId, CategoryRequest categoryRequest) {
-        UUID userId = (UUID) httpSession.getAttribute("UserId");
-        User user = userRepository.getByUserId(userId);
-        if(!(user.getRole().equals(Role.ADMIN) || user.getRole().equals(Role.SUB_ADMIN))){
-            throw new MasterException(HttpStatus.FORBIDDEN, "bạn không có quyền!");
-        }
+        permissionCheck.checkPermission("update");
         if(!categoryRepository.existsById(categoryId)){
-            throw new MasterException(HttpStatus.NOT_FOUND, "khong ton tai");
+            throw new MasterException(HttpStatus.NOT_FOUND, "Sản phẩm không tồn tại");
         }
         Category category = categoryRepository.getReferenceById(categoryId);
         categoryMapper.update(categoryRequest, category);
@@ -72,20 +57,16 @@ public class CategoryServiceImpl implements CategoryService{
     @Override
     public CategoryResponse detail(UUID categoryId) {
         if(!categoryRepository.existsById(categoryId)){
-            throw new MasterException(HttpStatus.NOT_FOUND, "khong tim thay san pham");
+            throw new MasterException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm");
         }
         return categoryMapper.toDao(categoryRepository.getReferenceById(categoryId));
     }
 
     @Override
     public void delete(UUID categoryId) {
-        UUID userId = (UUID) httpSession.getAttribute("UserId");
-        User user = userRepository.getByUserId(userId);
-        if(!(user.getRole().equals(Role.ADMIN) || user.getRole().equals(Role.SUB_ADMIN))){
-            throw new MasterException(HttpStatus.FORBIDDEN, "bạn không có quyền!");
-        }
+        permissionCheck.checkPermission("delete");
         if(!categoryRepository.existsById(categoryId)){
-            throw new MasterException(HttpStatus.NOT_FOUND, "Khong tim thay san pham");
+            throw new MasterException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm");
         }
         categoryRepository.deleteById(categoryId);
     }

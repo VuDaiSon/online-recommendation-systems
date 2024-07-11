@@ -1,25 +1,20 @@
 package com.example.recommendershop.service.product;
 
+import com.example.recommendershop.authorization.PermissionCheck;
 import com.example.recommendershop.dto.ApiListBaseRequest;
 import com.example.recommendershop.dto.BasePage;
 import com.example.recommendershop.dto.SearchEntity;
 import com.example.recommendershop.dto.product.request.ProductRequest;
 import com.example.recommendershop.dto.product.response.ProductAvatar;
 import com.example.recommendershop.dto.product.response.ProductResponse;
-import com.example.recommendershop.entity.Category;
-import com.example.recommendershop.entity.Product;
-import com.example.recommendershop.entity.User;
-import com.example.recommendershop.enums.Role;
+import com.example.recommendershop.entity.*;
 import com.example.recommendershop.exception.MasterException;
-import com.example.recommendershop.mapper.CategoryMapper;
 import com.example.recommendershop.mapper.ProductMapper;
-import com.example.recommendershop.repository.CategoryRepository;
-import com.example.recommendershop.repository.ProductRepository;
-import com.example.recommendershop.repository.UserRepository;
+import com.example.recommendershop.repository.*;
 import com.example.recommendershop.utils.FilterDataUtil;
+import com.example.recommendershop.validation.Validator;
 import io.micrometer.common.util.StringUtils;
 import jakarta.persistence.criteria.Predicate;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
@@ -28,108 +23,51 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class ProductServiceImpl implements ProductService{
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
     private final CategoryRepository categoryRepository;
-    private final UserRepository userRepository;
-    private final HttpSession httpSession;
-    List<Specification<Product>> specifications;
-
+    private final PermissionCheck permissionCheck;
+    private final Validator validator;
     @Autowired
-    public ProductServiceImpl(ProductRepository productRepository, ProductMapper productMapper, CategoryRepository categoryRepository, HttpSession httpSession, UserRepository userRepository){
+    public ProductServiceImpl(ProductRepository productRepository, ProductMapper productMapper, CategoryRepository categoryRepository, PermissionCheck permissionCheck, Validator validator){
         this.productRepository =productRepository;
         this.productMapper = productMapper;
         this.categoryRepository = categoryRepository;
-        this.userRepository = userRepository;
-        this.httpSession = httpSession;
-        specifications = new ArrayList<>();
-
+        this.permissionCheck = permissionCheck;
+        this.validator = validator;
     }
     @Override
     @Transactional
-//    public ProductResponse create(ProductRequest productRequest) {
-//        // Kiểm tra xem sản phẩm đã tồn tại hay chưa
-//        if (productRepository.findProductByName(productRequest.getName()) != null) {
-//            throw new MasterException(HttpStatus.BAD_REQUEST, "Sản phẩm đã tồn tại");
-//        }
-//
-//        // Tìm danh mục bằng categoryId
-//        Category category = categoryRepository.findById(productRequest.getCategoryId())
-//                .orElseThrow(() -> new MasterException(HttpStatus.NOT_FOUND, "Danh mục không tồn tại"));
-//
-//        // Tạo mới sản phẩm và thiết lập danh mục
-//        Product product = productMapper.toEntity(productRequest);
-//        product.setCategory(category);
-//
-//        // Lưu sản phẩm vào cơ sở dữ liệu
-//        product = productRepository.save(product);
-//
-//        // Chuyển đổi thành ProductResponse để trả về cho client
-//        ProductResponse productResponse = productMapper.toDao(product);
-//        return productResponse;
-//    }
+
     public ProductResponse create(ProductRequest productRequest) {
-        UUID userId = (UUID) httpSession.getAttribute("UserId");
-        User user = userRepository.getByUserId(userId);
-        if(!(user.getRole().equals(Role.ADMIN) || user.getRole().equals(Role.SUB_ADMIN))){
-            throw new MasterException(HttpStatus.FORBIDDEN, "bạn không có quyền!");
-        }
-        if (productRepository.findProductByName(productRequest.getName()) != null) {
-            throw new MasterException(HttpStatus.BAD_REQUEST, "Sản phẩm đã tồn tại");
-        }
-
-        // Tìm danh mục bằng categoryId
-        Category category = categoryRepository.findById(productRequest.getCategoryId())
-                .orElseThrow(() -> new MasterException(HttpStatus.NOT_FOUND, "Danh mục không tồn tại"));
-
-        // Tạo mới sản phẩm và thiết lập danh mục
+        permissionCheck.checkPermission("add");
+        validator.checkEntityExists(productRepository.findProductByName(productRequest.getName()), HttpStatus.BAD_REQUEST, "Sản phẩm đã tồn tại");
+        Category category = validator.checkEntityNotExists(categoryRepository.findById(productRequest.getCategoryId()), HttpStatus.NOT_FOUND, "Danh mục không tồn tại");
         Product product = productMapper.toEntity(productRequest);
         product.setCategory(category);
-
-        // Lưu sản phẩm vào cơ sở dữ liệu
         product = productRepository.save(product);
-
-        // Chuyển đổi thành ProductResponse để trả về cho client
         ProductResponse productResponse = productMapper.toDao(product);
         return productResponse;
     }
     @Override
     @Transactional
     public ProductResponse update(UUID productId, ProductRequest productRequest) {
-        UUID userId = (UUID) httpSession.getAttribute("UserId");
-        User user = userRepository.getByUserId(userId);
-        if(!(user.getRole().equals(Role.ADMIN) || user.getRole().equals(Role.SUB_ADMIN))){
-            throw new MasterException(HttpStatus.FORBIDDEN, "bạn không có quyền!");
-        }
-        Product existingProduct = productRepository.findById(productId)
-                .orElseThrow(() -> new MasterException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm"));
-
-        // Tìm danh mục bằng categoryId
-        Category category = categoryRepository.findById(productRequest.getCategoryId())
-                .orElseThrow(() -> new MasterException(HttpStatus.NOT_FOUND, "Danh mục không tồn tại"));
-
-        // Cập nhật thông tin sản phẩm và thiết lập danh mục
+        permissionCheck.checkPermission("update");
+        Product existingProduct = validator.checkEntityNotExists(productRepository.findById(productId), HttpStatus.NOT_FOUND, "Sảm phẩm không tồn tại");
+        Category category = validator.checkEntityNotExists(categoryRepository.findById(productRequest.getCategoryId()), HttpStatus.NOT_FOUND, "Danh mục không tồn tại");
         productMapper.update(productRequest, existingProduct);
         existingProduct.setCategory(category);
         Product updatedProduct = productRepository.save(existingProduct);
-
-        // Chuyển đổi thành ProductResponse để trả về cho client
         ProductResponse productResponse = productMapper.toDao(updatedProduct);
         return productResponse;
     }
     @Override
     public void delete(UUID productId){
-        UUID userId = (UUID) httpSession.getAttribute("UserId");
-        User user = userRepository.getByUserId(userId);
-        if(!(user.getRole().equals(Role.ADMIN) || user.getRole().equals(Role.SUB_ADMIN))){
-            throw new MasterException(HttpStatus.FORBIDDEN, "bạn không có quyền!");
-        }
+        permissionCheck.checkPermission("delete");
         if(!productRepository.existsById(productId)){
             throw new MasterException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm");
         }
@@ -169,7 +107,7 @@ public class ProductServiceImpl implements ProductService{
         return this.map(page);
     }
     public BasePage<ProductAvatar> getProductsByCategory(UUID categoryId, ApiListBaseRequest listBaseRequest){
-        Category category = categoryRepository.findById(categoryId).orElseThrow(()-> new MasterException(HttpStatus.NOT_FOUND, "không tìm thấy sản phẩm của category này"));
+        Category category = validator.checkEntityNotExists(categoryRepository.findById(categoryId),HttpStatus.NOT_FOUND, "Danh mục rỗng");
         Page<Product> productPage = productRepository.findProductByCategory(category, FilterDataUtil.buildPageRequest(listBaseRequest));
         return this.map(productPage);
     }

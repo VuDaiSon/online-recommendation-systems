@@ -1,12 +1,13 @@
 package com.example.recommendershop.dto.admin.request;
 
-import com.example.recommendershop.enums.Role;
 import com.example.recommendershop.enums.Sex;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.Set;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -25,5 +26,5 @@ public class UserEditForAdmin {
     private String password;
     private Integer age;
     private Sex sex;
-    private Role role;
+    private Set<UUID> userGroupIds;
 }

@@ -18,6 +18,6 @@ public interface UserService {
 
     public UserInfor detail(UUID userId);
     public ResponseData<?> changePassword(UUID uuid, ChangePasswordRequest changePasswordRequest);
-//    public void forgotPassword(String email);
+//    public ResponseData<?> forgotPassword(String email);
 
     }

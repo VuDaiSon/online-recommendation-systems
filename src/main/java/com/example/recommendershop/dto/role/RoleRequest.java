@@ -1,4 +1,4 @@
-package com.example.recommendershop.dto.user.response;
+package com.example.recommendershop.dto.role;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,7 +9,6 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class LoginResponse {
-    private String message;
-    private String userName;
+public class RoleRequest {
+    private String name;
 }

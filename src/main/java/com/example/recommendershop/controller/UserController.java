@@ -46,9 +46,13 @@ public class UserController {
     public UserInfor edit(@PathVariable(name = "userId") UUID userId, @RequestBody UserRequest userRequest){
         return userService.update(userId, userRequest);
     }
-    @PutMapping("/{userId}/changePassword")
+    @PutMapping("/{userId}/change-password")
     public ResponseData<?> change(@PathVariable(name = "userId")UUID userId, @RequestBody ChangePasswordRequest changePasswordRequest){
         return userService.changePassword(userId, changePasswordRequest);
     }
+//    @PutMapping("/forgot-password")
+//    public ResponseData<?> resetPassword(@RequestParam String email){
+//        return userService.forgotPassword(email);
+//    }
 
 }

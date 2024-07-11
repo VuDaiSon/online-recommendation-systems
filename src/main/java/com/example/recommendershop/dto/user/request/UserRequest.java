@@ -21,6 +21,9 @@ public class UserRequest {
     @NotNull
     private String address;
     @NotNull
+    private String password;
+
+    @NotNull
     private Integer age;
     @NotNull
     private Sex sex;

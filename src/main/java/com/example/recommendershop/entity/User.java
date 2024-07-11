@@ -1,6 +1,5 @@
 package com.example.recommendershop.entity;
 
-import com.example.recommendershop.enums.Role;
 import com.example.recommendershop.enums.Sex;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -10,7 +9,9 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -46,11 +47,14 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role role;
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private Sex sex;
-
+    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "user_usergroup",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "usergroup_id")
+    )
+    private Set<UserGroup> userGroups = new HashSet<>();
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Cart> carts;
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)

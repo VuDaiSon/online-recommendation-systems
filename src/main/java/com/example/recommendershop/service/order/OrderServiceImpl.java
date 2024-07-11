@@ -1,5 +1,6 @@
 package com.example.recommendershop.service.order;
 
+import com.example.recommendershop.authorization.PermissionCheck;
 import com.example.recommendershop.dto.ApiListBaseRequest;
 import com.example.recommendershop.dto.BasePage;
 import com.example.recommendershop.dto.ResponseData;
@@ -10,10 +11,8 @@ import com.example.recommendershop.dto.order.response.AdminEditResponse;
 import com.example.recommendershop.dto.order.response.CheckOutViewModel;
 import com.example.recommendershop.dto.order.response.OrderResponse;
 import com.example.recommendershop.dto.order.response.ProductInOrder;
-import com.example.recommendershop.dto.product.response.ProductAvatar;
 import com.example.recommendershop.dto.user.response.UserResponse;
 import com.example.recommendershop.entity.*;
-import com.example.recommendershop.enums.Role;
 import com.example.recommendershop.exception.MasterException;
 import com.example.recommendershop.mapper.CartMapper;
 import com.example.recommendershop.mapper.OrderMapper;
@@ -43,7 +42,8 @@ public class OrderServiceImpl implements OrderService{
     private final CartRepository cartRepository;
     private final OrderRepository orderRepository;
     private final CartMapper cartMapper;
-    public OrderServiceImpl(HttpSession httpSession, UserRepository userRepository, CartDetailRepository cartDetailRepository, ProductRepository productRepository, OrderMapper orderMapper, CartRepository cartRepository, ProductMapper productMapper, OrderRepository orderRepository,CartMapper cartMapper){
+    private final PermissionCheck permissionCheck;
+    public OrderServiceImpl(HttpSession httpSession, UserRepository userRepository, CartDetailRepository cartDetailRepository, ProductRepository productRepository, OrderMapper orderMapper, CartRepository cartRepository, OrderRepository orderRepository, CartMapper cartMapper, PermissionCheck permissionCheck){
         this.httpSession = httpSession;
         this.userRepository = userRepository;
         this.cartDetailRepository = cartDetailRepository;
@@ -52,6 +52,7 @@ public class OrderServiceImpl implements OrderService{
         this.cartRepository = cartRepository;
         this.orderRepository = orderRepository;
         this.cartMapper = cartMapper;
+        this.permissionCheck = permissionCheck;
     }
     public int CalculateShippingFee (int totalValue)
     {
@@ -196,20 +197,12 @@ public class OrderServiceImpl implements OrderService{
         }
     }
     public BasePage<OrderResponse> AdminIndex(ApiListBaseRequest listBaseRequest){
-        String roleStr = (String) httpSession.getAttribute("Role");
-        Role role = Role.valueOf(roleStr);
-        if(!(role.equals(Role.ADMIN) || role.equals(Role.SUB_ADMIN))){
-            throw new MasterException(HttpStatus.FORBIDDEN, "bạn không có quyền!");
-        }
+        permissionCheck.checkPermission("admin");
         Page<Order> page = orderRepository.findAll(FilterDataUtil.buildPageRequest(listBaseRequest));
         return this.map(page);
     }
     public AdminEditResponse AdminCheck(UUID orderId){
-        String roleStr = (String) httpSession.getAttribute("Role");
-        Role role = Role.valueOf(roleStr);
-        if(!(role.equals(Role.ADMIN) || role.equals(Role.SUB_ADMIN))){
-            throw new MasterException(HttpStatus.FORBIDDEN, "bạn không có quyền!");
-        }
+        permissionCheck.checkPermission("admin");
         Optional<Order> orderOptional = orderRepository.findById(orderId);
         Order order = orderOptional.get();
         if(order == null){
