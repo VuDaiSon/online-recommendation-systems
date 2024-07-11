@@ -14,7 +14,6 @@ import com.example.recommendershop.mapper.UserMapper;
 import com.example.recommendershop.repository.UserGroupRepository;
 import com.example.recommendershop.repository.UserRepository;
 import com.example.recommendershop.utils.FilterDataUtil;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -31,16 +30,14 @@ public class AdminServiceImpl implements AdminService{
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final AdminMapper adminMapper;
-    private final HttpSession httpSession;
     private final PasswordEncoder passwordEncoder;
     private final PermissionCheck permissionCheck;
     private final UserGroupRepository userGroupRepository;
 
-    public AdminServiceImpl(UserRepository userRepository, UserMapper userMapper, AdminMapper adminMapper, HttpSession httpSession, PasswordEncoder passwordEncoder, PermissionCheck permissionCheck, UserGroupRepository userGroupRepository){
+    public AdminServiceImpl(UserRepository userRepository, UserMapper userMapper, AdminMapper adminMapper, PasswordEncoder passwordEncoder, PermissionCheck permissionCheck, UserGroupRepository userGroupRepository){
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.adminMapper = adminMapper;
-        this.httpSession = httpSession;
         this.passwordEncoder = passwordEncoder;
         this.permissionCheck = permissionCheck;
         this.userGroupRepository = userGroupRepository;

@@ -16,7 +16,6 @@ import com.example.recommendershop.entity.*;
 import com.example.recommendershop.exception.MasterException;
 import com.example.recommendershop.mapper.CartMapper;
 import com.example.recommendershop.mapper.OrderMapper;
-import com.example.recommendershop.mapper.ProductMapper;
 import com.example.recommendershop.repository.*;
 import com.example.recommendershop.utils.FilterDataUtil;
 import jakarta.servlet.http.HttpSession;
@@ -54,6 +53,7 @@ public class OrderServiceImpl implements OrderService{
         this.cartMapper = cartMapper;
         this.permissionCheck = permissionCheck;
     }
+
     public int CalculateShippingFee (int totalValue)
     {
         int shippingFee = 0;
@@ -128,6 +128,7 @@ public class OrderServiceImpl implements OrderService{
         cartRepository.save(cart);
         return new ResponseData<>(HttpStatus.OK.value(), "đặt hàng thành công");
     }
+
     protected BasePage<OrderResponse> map(Page<Order> page) {
         BasePage<OrderResponse> rPage = new BasePage<>();
         rPage.setData(orderMapper.toListResponse(page.getContent()));
@@ -136,6 +137,7 @@ public class OrderServiceImpl implements OrderService{
         rPage.setPage(page.getPageable().getPageNumber());
         return rPage;
     }
+
     @Override
     public BasePage<OrderResponse> getAllOrders(ApiListBaseRequest apiListBaseRequest) {
         UUID userId = (UUID) httpSession.getAttribute("UserId");
@@ -145,6 +147,7 @@ public class OrderServiceImpl implements OrderService{
         Page<Order> page = orderRepository.findByUser_UserId(userId, FilterDataUtil.buildPageRequest(apiListBaseRequest));
         return this.map(page);
     }
+
     public CheckOutViewModel OrderDetail(UUID orderId){
         if(orderId == null){
             throw new MasterException(HttpStatus.NOT_FOUND, "không tìm thấy đơn đặt hàng");
@@ -178,6 +181,7 @@ public class OrderServiceImpl implements OrderService{
         int shippingFee = CalculateShippingFee(subtotal);
         return new CheckOutViewModel(userResponse, cartResponse, cartDetailResponses, subtotal, shippingFee);
     }
+
     public ResponseData<?> cancelOrder(UUID orderId){
         if(orderId == null){
             throw new MasterException(HttpStatus.NOT_FOUND, "không tìm thấy đơn hàng");
@@ -196,11 +200,13 @@ public class OrderServiceImpl implements OrderService{
             return new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "An error occurred:" + ex.getMessage());
         }
     }
+
     public BasePage<OrderResponse> AdminIndex(ApiListBaseRequest listBaseRequest){
         permissionCheck.checkPermission("admin");
         Page<Order> page = orderRepository.findAll(FilterDataUtil.buildPageRequest(listBaseRequest));
         return this.map(page);
     }
+
     public AdminEditResponse AdminCheck(UUID orderId){
         permissionCheck.checkPermission("admin");
         Optional<Order> orderOptional = orderRepository.findById(orderId);
@@ -216,16 +222,16 @@ public class OrderServiceImpl implements OrderService{
                 "Đang giao hàng",
                 "Đã nhận hàng"
         );
-
         return new AdminEditResponse(order, statuses);
     }
+
     public ResponseData<?> AdminEdit(UUID id, Order updatedOrder) {
         if (!id.equals(updatedOrder.getOrderId())) {
-throw new MasterException(HttpStatus.NOT_FOUND, "không tìm thấy order tương ứng");        }
-
+            throw new MasterException(HttpStatus.NOT_FOUND, "không tìm thấy order tương ứng");        }
         try {
             orderRepository.save(updatedOrder);
-return new ResponseData<>(HttpStatus.OK.value(), "duyệt thành công đơn đặt hàng");        } catch (Exception ex) {
+            return new ResponseData<>(HttpStatus.OK.value(), "duyệt thành công đơn đặt hàng");        }
+        catch (Exception ex) {
             return new ResponseData<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal server error: " + ex.getMessage());
         }
     }

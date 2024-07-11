@@ -9,7 +9,6 @@ import com.example.recommendershop.entity.RoleGroup;
 import com.example.recommendershop.entity.UserGroup;
 import com.example.recommendershop.exception.MasterException;
 import com.example.recommendershop.mapper.RoleGroupMapper;
-import com.example.recommendershop.mapper.RoleMapper;
 import com.example.recommendershop.repository.RoleGroupRepository;
 import com.example.recommendershop.repository.RoleRepository;
 import com.example.recommendershop.repository.UserGroupRepository;

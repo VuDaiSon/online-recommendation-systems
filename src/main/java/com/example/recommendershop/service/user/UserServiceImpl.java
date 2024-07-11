@@ -18,7 +18,6 @@
     import org.springframework.stereotype.Service;
 
     import java.util.Optional;
-    import java.util.Random;
     import java.util.UUID;
 
     @Service
@@ -57,7 +56,6 @@
             if (loginRequest.getEmail() == null || loginRequest.getPassword() == null) {
                 throw new MasterException(HttpStatus.BAD_REQUEST, "Email và mật khẩu không được để trống");
             }
-
             Optional<User> userOptional = userRepository.findByEmail(loginRequest.getEmail());
             User user = userOptional.get();
             if (userOptional.isEmpty() || !passwordEncoder.matches(loginRequest.getPassword(),user.getPassword())) {
@@ -68,7 +66,6 @@
             httpSession.setAttribute("UserName", user.getName());
             httpSession.setAttribute("AuthToken", token);
             return new ResponseData<>(HttpStatus.OK.value(), "Đăng nhập thành công", token);
-
         }
         @Override
         public void logout() {
@@ -77,7 +74,7 @@
         public UserInfor detail(UUID userId){
             String sessionUserId = (String) httpSession.getAttribute("UserId");
             if (sessionUserId == null) {
-                throw new MasterException(HttpStatus.UNAUTHORIZED, "Chưa đăng nhập");
+                throw new MasterException(HttpStatus.UNAUTHORIZED, "Bạn cần đăng nhập để thực hiện chức năng này");
             }
             if (!sessionUserId.equals(userId.toString())) {
                 throw new MasterException(HttpStatus.FORBIDDEN, "Không có quyền truy cập thông tin người dùng này");
@@ -104,7 +101,7 @@
         public ResponseData<?> changePassword(UUID userId, ChangePasswordRequest changePasswordRequest){
 
             if(!verifyOldPassword(userId, changePasswordRequest.getOldPassword())){
-                throw new MasterException(HttpStatus.BAD_REQUEST, "mật khẩu cũ không chính xác");
+                throw new MasterException(HttpStatus.BAD_REQUEST, "Mật khẩu cũ không chính xác");
             }
             Optional<User> userOptional = userRepository.findById(userId);
             if(userOptional.isPresent()){
@@ -115,7 +112,7 @@
             else {
                 throw new MasterException(HttpStatus.NOT_FOUND, "không tìm thấy người dùng");
             }
-            return new ResponseData<>(HttpStatus.OK.value(), "đổi mật khẩu thành công");
+            return new ResponseData<>(HttpStatus.OK.value(), "Đổi mật khẩu thành công");
         }
 
 //        private String generateRandomPassword() {
